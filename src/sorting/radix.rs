@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-pub fn sort(src: &[i32]) -> Box<[i32]> {
+/// Sorts the given array in ascending order.
+pub(crate) fn sort(src: &[i32]) -> Box<[i32]> {
     let mut lookup = HashMap::new();
     for i in src {
         lookup.insert(*i, i.to_string().into_bytes().into_boxed_slice());
