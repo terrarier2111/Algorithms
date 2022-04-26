@@ -10,17 +10,19 @@ use std::collections::hash_map::Values;
 use std::convert::TryInto;
 
 fn main() {
-    let unsorted = [3, 7, 34, 937, 543, 63, 8427, 0, 1, 934, 1, 47427, 245];
+    let mut unsorted = [3, 7, 34, 937, 543, 63, 8427, 0, 1, 934, 1, 47427, 245];
     println!("{:?}", unsorted);
-    let sorted = sorting::radix::sort(&unsorted);
-    println!("{:?}", sorted);
+    //let sorted = sorting::radix::sort(&unsorted);
+    //println!("{:?}", sorted);
+    sorting::bubble::sort(&mut unsorted);
+    println!("{:?}", unsorted);
     // let mut input = "test".to_string().to_uppercase();
     // let mut caesar = encrypt::encrypt_caesar(&mut input, 13);
-    let caesar = "LFK NDP VDK XQG VLH JWH".to_string();
+    /*let caesar = "LFK NDP VDK XQG VLH JWH".to_string();
     println!("broken: {:?}", break_encrypt::caesar::break_caesar_permuts_default(caesar.to_uppercase().as_mut_str())/*.unwrap()*/);
     let poly_result = encrypt::encrypt_poly("DERABGESCHLOSSENEROMAn", "JAMESBOND");
     println!("poly: {}", poly_result);
     println!("decrypted poly: {}", encrypt::decrypt_poly(&*poly_result, "JAMESBOND"));
     let to_query_through: &[usize] = &[2, 5, 8, 30, 60, 80, 98, 347, 348, 9423];
-    println!("found position: {}", search::binary::search(to_query_through, 30));
+    println!("found position: {}", search::binary::search(to_query_through, 30));*/
 }
