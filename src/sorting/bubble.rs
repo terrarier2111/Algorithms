@@ -1,4 +1,4 @@
-pub fn sort/*<T: PartialOrd, const MIN: T>*/(src: &mut [i32]) {
+pub fn sort(src: &mut [i32]) {
     // go over over the entire array
     for i in 0..src.len() {
         let mut max = i32::MIN;
