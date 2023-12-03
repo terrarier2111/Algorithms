@@ -1,8 +1,11 @@
+#![feature(int_roundings)]
+
 mod sorting;
 mod encrypt;
 mod break_encrypt;
 pub mod util;
 mod search;
+mod sudoku;
 
 use std::collections::HashMap;
 use std::slice::Iter;
