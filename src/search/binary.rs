@@ -8,7 +8,7 @@ pub fn search_nearest(container: &[usize], target: usize) -> usize {
 /// Returns the index where the target element is.
 ///
 /// Returns the next smaller index on failure.
-pub fn search_length_limited_nearest<T: PartialOrd>(container: &[T], target: usize, length: usize) -> usize {
+pub fn search_length_limited_nearest<T: PartialOrd>(container: &[T], target: T, length: usize) -> usize {
     let mut curr_pos = length / 2;
     let mut step_size = length / 4;
     let mut adapted = false;

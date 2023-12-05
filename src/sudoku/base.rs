@@ -144,9 +144,7 @@ impl MetaArray {
 
     #[inline]
     pub const fn has_specified(&self, num: usize) -> bool {
-        let top_idx = num / (2 * size_of::<u64>() / size_of::<u8>());
-        let sub_idx = num % (2 * size_of::<u64>() / size_of::<u8>());
-        (self.0[top_idx] & (1 << (4 * sub_idx))) == 0
+        self.get_possibility(num) == 0
     }
 
     #[inline]
@@ -176,7 +174,7 @@ impl CellArray {
         let mut idx = 0;
         while idx < board.len() {
             if board[idx] != 0 {
-                unsafe { raw[idx].write(Cell::new_val(board[idx])); }
+                raw[idx].write(Cell::new_val(board[idx]));
             } else {
                 let mut maybe = Cell::ANY;
                 // row elems
@@ -184,7 +182,7 @@ impl CellArray {
                 while i < 9 {
                     let val = board[idx / 9 + i];
                     if val != 0 {
-                        maybe &= !(1 << (1 + val));
+                        maybe &= !(1 << val);
                     }
                     i += 1;
                 }
@@ -193,7 +191,7 @@ impl CellArray {
                 while i < 9 {
                     let val = board[idx % 9 + i * 9];
                     if val != 0 {
-                        maybe &= !(1 << (1 + val));
+                        maybe &= !(1 << val);
                     }
                     i += 1;
                 }
@@ -207,13 +205,13 @@ impl CellArray {
                     while k < 3 {
                         let val = board[base + i * 9 + k];
                         if val != 0 {
-                            maybe &= !(1 << (1 + val));
+                            maybe &= !(1 << val);
                         }
                         k += 1;
                     }
                     i += 1;
                 }
-                unsafe { raw[idx].write(Cell::new_maybe(maybe)); }
+                raw[idx].write(Cell::new_maybe(maybe));
             }
             idx += 1;
         }
@@ -242,7 +240,7 @@ impl Cell {
 
     #[inline]
     const fn new_val(num: u8) -> Self {
-        Self(1 << num.trailing_zeros())
+        Self(1 << num)
     }
 
     #[inline]
@@ -262,20 +260,20 @@ impl Cell {
     
     #[inline]
     pub const fn may_be(self, val: u8) -> bool {
-        self.0 & (1 << (val + 1)) != 0
+        self.0 & (1 << val) != 0
     }
 
     #[inline]
     pub const fn set_impossible(&mut self, val: u8) {
-        self.0 &= !(1 << (val + 1) as u16);
+        self.0 &= !(1 << val as u16);
     }
 
     #[inline]
-    pub const fn get_val(self) -> Option<u16> {
+    pub const fn get_val(self) -> Option<u8> {
         if self.0.count_ones() > 1 {
             return None;
         }
-        Some((self.0 >> 1).trailing_zeros() as u16)
+        Some(self.0.trailing_zeros() as u8)
     }
 
     #[inline]
@@ -296,13 +294,15 @@ impl Iterator for PossibleValsIter {
         if self.0 == 0 {
             return None;
         }
-        self.0 &= !(1 << self.0.trailing_zeros());
-        Some(self.0.trailing_zeros() as u8)
+        let idx = self.0.trailing_zeros();
+        self.0 &= !(1 << idx);
+        println!("val: {}", idx as u8);
+        Some(idx as u8)
     }
 
     #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.0.count_zeros() as usize, Some(self.0.count_zeros() as usize))
+        (self.0.count_ones() as usize, Some(self.0.count_ones() as usize))
     }
 
 }

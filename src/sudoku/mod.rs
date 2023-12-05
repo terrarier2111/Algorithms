@@ -1,3 +1,3 @@
 mod base;
-mod solver;
-mod verifier;
+pub mod solver;
+pub mod verifier;
