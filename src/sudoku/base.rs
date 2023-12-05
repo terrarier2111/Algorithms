@@ -269,6 +269,11 @@ impl Cell {
     }
 
     #[inline]
+    pub const fn set_val(&mut self, val: u8) {
+        self.0 = 1 << val as u16;
+    }
+
+    #[inline]
     pub const fn get_val(self) -> Option<u8> {
         if self.0.count_ones() > 1 {
             return None;
