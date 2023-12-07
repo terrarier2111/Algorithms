@@ -7,9 +7,13 @@ pub const CELLS: usize = ROWS * COLUMNS;
 
 pub const FIELD_INDICES: [[usize; 9]; 9] = {
     const fn construct_field_idx(start: usize) -> [usize; 9] {
-        [start + 0 * 9, start + 1 + 0 * 9, start + 2 + 0 * 9,
-        start + 0 + 1 * 9, start + 1 + 1 * 9, start + 2 + 1 * 9,
-        start + 0 + 2 * 9, start + 1 + 2 * 9, start + 2 + 2 * 9,
+        let major_off = start / 9;
+        let minor_off = start % 9;
+        let start = major_off * 27 + minor_off;
+        [
+            start + 0 + 0 * 9, start + 1 + 0 * 9, start + 2 + 0 * 9,
+            start + 0 + 1 * 9, start + 1 + 1 * 9, start + 2 + 1 * 9,
+            start + 0 + 2 * 9, start + 1 + 2 * 9, start + 2 + 2 * 9,
         ]
     }
 
@@ -28,10 +32,10 @@ pub const ROW_INDICES: [[usize; 9]; 9] = {
     while i < 9 {
         ret[i] = {
             let mut row = [0; 9];
-            let mut i = 0;
-            while i < 9 {
-                row[i] = i;
-                i += 1;
+            let mut k = 0;
+            while k < 9 {
+                row[k] = i * 9 + k;
+                k += 1;
             }
             row
         };
@@ -103,7 +107,7 @@ impl SudokuBase {
             for column in 0..COLUMNS {
                 let cell = cells.get((row + column * 9) as u8);
                 for val in cell.possible_vals() {
-                    row_meta[column].set_possibility(val as usize, row_meta[column].get_possibility(val as usize) as usize + 1);
+                    row_meta[row].set_possibility(val as usize, row_meta[row].get_possibility(val as usize) as usize + 1);
                 }
             }
         }

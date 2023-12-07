@@ -63,7 +63,7 @@ pub fn solve(board: &mut [u8; CELLS]) {
 
     while changed {
         changed = false;
-        for cell_idx in 0..CELLS {
+        /*for cell_idx in 0..CELLS {
             let cell = base.cells.get(cell_idx as u8);
             if cell.has_val() {
                 let val = cell.get_val().unwrap();
@@ -108,8 +108,8 @@ pub fn solve(board: &mut [u8; CELLS]) {
                     }
                 }
             }
-        }
-        for row_idx in 0..ROWS {
+        }*/
+        /*for row_idx in 0..ROWS {
             for i in 1..10 {
                 if base.row_meta[row_idx].get_possibility(i) == 1 {
                     println!("update row {}|{}", row_idx, i);
@@ -140,12 +140,12 @@ pub fn solve(board: &mut [u8; CELLS]) {
                     }
                 }
             }
-        }
+        }*/
         for field_idx in 0..FIELDS {
             for i in 1..10 {
                 if base.field_meta[field_idx].get_possibility(i) == 1 {
                     println!("update field {}|{}", field_idx, i);
-                    changed = true;
+                    // changed = true;
                     base.field_meta[field_idx].set_possibility(i, 0);
                     for cell in 0..9 {
                         let cell = FIELD_INDICES[field_idx as usize][cell];

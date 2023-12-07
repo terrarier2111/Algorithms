@@ -10,9 +10,12 @@ mod search;
 mod sudoku;
 
 use std::collections::HashMap;
+use std::mem::transmute;
 use std::slice::Iter;
 use std::collections::hash_map::Values;
 use std::convert::TryInto;
+
+use crate::sudoku::print_constants;
 
 fn main() {
     /*let mut unsorted = [3, 7, 34, 937, 543, 63, 8427, 0, 1, 934, 1, 47427, 245];
@@ -35,9 +38,13 @@ fn main() {
     println!("found position: {}", search::binary::search(to_query_through, 30));*/
     let mut example = EXAMPLE_SUDOKU_BOARD.clone();
     sudoku::solver::solve(&mut example);
-    println!("{:?}", example);
+    let ex_print = unsafe { transmute::<_, [[u8; 9]; 9]>(example.clone()) };
+    for row in ex_print {
+        println!("{:?}", row);
+    }
     assert_ne!(&example, EXAMPLE_SUDOKU_BOARD);
     println!("tz: {}", (1_usize << 8).trailing_zeros() as usize);
+    print_constants();
 }
 
 const EXAMPLE_SUDOKU_BOARD: &[u8; 81] = &[
