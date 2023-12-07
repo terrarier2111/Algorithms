@@ -8,8 +8,8 @@ pub const CELLS: usize = ROWS * COLUMNS;
 pub const FIELD_INDICES: [[usize; 9]; 9] = {
     const fn construct_field_idx(start: usize) -> [usize; 9] {
         [start + 0 * 9, start + 1 + 0 * 9, start + 2 + 0 * 9,
-        start + 0 + 0 * 9, start + 1 + 0 * 9, start + 2 + 0 * 9,
-        start + 0 + 0 * 9, start + 1 + 0 * 9, start + 2 + 0 * 9,
+        start + 0 + 1 * 9, start + 1 + 1 * 9, start + 2 + 1 * 9,
+        start + 0 + 2 * 9, start + 1 + 2 * 9, start + 2 + 2 * 9,
         ]
     }
 

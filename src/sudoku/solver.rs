@@ -76,7 +76,7 @@ pub fn solve(board: &mut [u8; CELLS]) {
                         changed = true;
                         row.set_possibility(val as usize, 0);
                         for cell in 0..9 {
-                            let cell = (cell_idx - cell_idx % 9) as usize + cell;
+                            let cell = ROW_INDICES[row_idx as usize][cell];
                             set_impossible(&mut base, cell, val as usize);
                         }
                     }
@@ -114,10 +114,12 @@ pub fn solve(board: &mut [u8; CELLS]) {
                 if base.row_meta[row_idx].get_possibility(i) == 1 {
                     println!("update row {}|{}", row_idx, i);
                     changed = true;
+                    base.row_meta[row_idx].set_possibility(i, 0);
                     for cell in 0..9 {
                         let cell = ROW_INDICES[row_idx as usize][cell];
                         if base.cells.get(cell as u8).may_be(i as u8) {
                             set_cell_val(&mut base, cell, i);
+                            println!("set cell val! (row {row_idx} num {i}) {cell}");
                         }
                     }
                 }
@@ -128,10 +130,12 @@ pub fn solve(board: &mut [u8; CELLS]) {
                 if base.column_meta[column_idx].get_possibility(i) == 1 {
                     println!("update column {}|{}", column_idx, i);
                     changed = true;
+                    base.column_meta[column_idx].set_possibility(i, 0);
                     for cell in 0..9 {
                         let cell = COLUMN_INDICES[column_idx as usize][cell];
                         if base.cells.get(cell as u8).may_be(i as u8) {
                             set_cell_val(&mut base, cell, i);
+                            println!("set cell val! (column {column_idx} num {i}) {cell}");
                         }
                     }
                 }
@@ -142,10 +146,12 @@ pub fn solve(board: &mut [u8; CELLS]) {
                 if base.field_meta[field_idx].get_possibility(i) == 1 {
                     println!("update field {}|{}", field_idx, i);
                     changed = true;
+                    base.field_meta[field_idx].set_possibility(i, 0);
                     for cell in 0..9 {
                         let cell = FIELD_INDICES[field_idx as usize][cell];
                         if base.cells.get(cell as u8).may_be(i as u8) {
                             set_cell_val(&mut base, cell, i);
+                            println!("set cell val! (field {field_idx} num {i}) {cell}");
                         }
                     }
                 }
