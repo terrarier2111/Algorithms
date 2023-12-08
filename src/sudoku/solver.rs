@@ -4,6 +4,9 @@ fn set_impossible(base: &mut SudokuBase, cell: usize, val: usize) {
     if base.cells.get(cell as u8).has_val() {
         return;
     }
+    if !base.cells.get(cell as u8).may_be(val as u8) {
+        return;
+    }
     base.cells.get_mut(cell as u8).set_impossible(val as u8);
     {
         let cell_field = field_by_cell(cell);
@@ -64,12 +67,13 @@ pub fn solve(board: &mut [u8; CELLS]) {
     let mut base = SudokuBase::new(board);
     let mut changed = true;
     println!("possibilities: {}", base.cells.get(4).possible_vals_set());
-    println!("field possibilities: {}", base.field_meta[2].get_possibility(1));
+    println!("field possibilities: {}", base.field_meta[1].get_possibility(8));
+    println!("col possibilities: {}", base.column_meta[5].get_possibility(5));
 
     while changed {
         println!("next iter!");
         changed = false;
-        /*for cell_idx in 0..CELLS {
+        for cell_idx in 0..CELLS {
             let cell = base.cells.get(cell_idx as u8);
             if cell.has_val() {
                 let val = cell.get_val().unwrap();
@@ -114,23 +118,22 @@ pub fn solve(board: &mut [u8; CELLS]) {
                     }
                 }
             }
-        }*/
-        /*for row_idx in 0..ROWS {
+        }
+        for row_idx in 0..ROWS {
             for i in 1..10 {
                 if base.row_meta[row_idx].get_possibility(i) == 1 {
                     println!("update row {}|{}", row_idx, i);
                     changed = true;
-                    base.row_meta[row_idx].set_possibility(i, 0);
                     for cell in 0..9 {
                         let cell = ROW_INDICES[row_idx as usize][cell];
                         if base.cells.get(cell as u8).may_be(i as u8) {
-                            set_cell_val(&mut base, cell, i);
                             println!("set cell val! (row {row_idx} num {i}) {cell}");
+                            set_cell_val(&mut base, cell, i);
                         }
                     }
                 }
             }
-        }*/
+        }
         for column_idx in 0..COLUMNS {
             for i in 1..10 {
                 if base.column_meta[column_idx].get_possibility(i) == 1 {

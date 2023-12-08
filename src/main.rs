@@ -16,6 +16,7 @@ use std::collections::hash_map::Values;
 use std::convert::TryInto;
 
 use crate::sudoku::print_constants;
+use crate::sudoku::verifier::verify;
 
 fn main() {
     /*let mut unsorted = [3, 7, 34, 937, 543, 63, 8427, 0, 1, 934, 1, 47427, 245];
@@ -36,13 +37,13 @@ fn main() {
     println!("decrypted poly: {}", encrypt::decrypt_poly(&*poly_result, "JAMESBOND"));
     let to_query_through: &[usize] = &[2, 5, 8, 30, 60, 80, 98, 347, 348, 9423];
     println!("found position: {}", search::binary::search(to_query_through, 30));*/
-    let mut example = EXAMPLE_SUDOKU_BOARD_2.clone();
+    let mut example = EXAMPLE_SUDOKU_BOARD_5.clone();
     sudoku::solver::solve(&mut example);
     let ex_print = unsafe { transmute::<_, [[u8; 9]; 9]>(example.clone()) };
     for row in ex_print {
         println!("{:?}", row);
     }
-    assert_ne!(&example, EXAMPLE_SUDOKU_BOARD_2);
+    assert!(verify(&example));
     println!("tz: {}", (1_usize << 8).trailing_zeros() as usize);
     print_constants();
 }
@@ -69,4 +70,41 @@ const EXAMPLE_SUDOKU_BOARD_2: &[u8; 81] = &[
     1, 8, 0, 9, 0, 3, 0, 0, 0,
     9, 0, 0, 7, 0, 1, 0, 0, 5,
     3, 0, 2, 6, 0, 0, 1, 0, 0,
+];
+
+const EXAMPLE_SUDOKU_BOARD_3: &[u8; 81] = &[
+    0, 0, 1, 0, 2, 0, 0, 0, 3,
+    0, 0, 0, 0, 1, 0, 4, 0, 0,
+    5, 0, 6, 0, 0, 7, 0, 0, 0,
+    7, 0, 0, 4, 0, 0, 0, 0, 0,
+    0, 3, 0, 0, 0, 0, 0, 8, 0,
+    0, 0, 0, 0, 0, 9, 0, 0, 1,
+    0, 0, 0, 5, 0, 0, 6, 0, 8,
+    0, 0, 9, 0, 8, 0, 0, 0, 0,
+    2, 0, 0, 0, 9, 0, 7, 0, 0,
+];
+
+// solvable
+const EXAMPLE_SUDOKU_BOARD_4: &[u8; 81] = &[
+    0, 0, 1, 2, 0, 0, 0, 0, 3,
+    0, 0, 0, 0, 0, 4, 0, 0, 5,
+    0, 0, 0, 6, 0, 0, 0, 7, 0,
+    0, 3, 0, 0, 0, 6, 0, 2, 0,
+    8, 0, 5, 0, 1, 0, 4, 0, 6,
+    0, 7, 0, 4, 0, 0, 0, 9, 0,
+    0, 6, 0, 0, 0, 9, 0, 0, 0,
+    2, 0, 0, 7, 0, 0, 0, 0, 0,
+    4, 0, 0, 0, 0, 1, 8, 0, 0,
+];
+
+const EXAMPLE_SUDOKU_BOARD_5: &[u8; 81] = &[
+    0, 0, 1, 2, 0, 0, 3, 0, 0,
+    0, 4, 0, 0, 3, 0, 0, 0, 5,
+    0, 0, 0, 6, 0, 0, 7, 0, 8,
+    0, 0, 8, 0, 0, 3, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0, 4,
+    0, 0, 0, 7, 0, 0, 9, 0, 0,
+    5, 0, 6, 0, 0, 8, 0, 0, 0,
+    8, 0, 0, 0, 1, 0, 0, 7, 0,
+    0, 0, 3, 0, 0, 9, 2, 0, 0,
 ];

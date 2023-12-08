@@ -97,7 +97,6 @@ impl SudokuBase {
             for row in 0..ROWS {
                 let cell = cells.get(COLUMN_INDICES[column][row] as u8);
                 if cell.has_val() {
-                    println!("skipped 1 val: {}", cell.0);
                     continue;
                 }
                 for val in cell.possible_vals() {
@@ -112,7 +111,6 @@ impl SudokuBase {
             for column in 0..COLUMNS {
                 let cell = cells.get(ROW_INDICES[row][column] as u8);
                 if cell.has_val() {
-                    println!("skipped 2 val: {}", cell.0);
                     continue;
                 }
                 for val in cell.possible_vals() {
@@ -127,7 +125,6 @@ impl SudokuBase {
             for idx in 0..9 {
                 let cell = cells.get(FIELD_INDICES[field][idx] as u8);
                 if cell.has_val() {
-                    println!("skipped 3 val: {}", cell.0);
                     continue;
                 }
                 for val in cell.possible_vals() {
@@ -308,10 +305,8 @@ impl Iterator for PossibleValsIter {
         if self.0 == 0 {
             return None;
         }
-        // let raw = self.0;
         let idx = self.0.trailing_zeros();
         self.0 &= !(1 << idx);
-        // println!("val: {} raw: {}", idx as u8, raw);
         Some(idx as u8)
     }
 
