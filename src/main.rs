@@ -36,13 +36,13 @@ fn main() {
     println!("decrypted poly: {}", encrypt::decrypt_poly(&*poly_result, "JAMESBOND"));
     let to_query_through: &[usize] = &[2, 5, 8, 30, 60, 80, 98, 347, 348, 9423];
     println!("found position: {}", search::binary::search(to_query_through, 30));*/
-    let mut example = EXAMPLE_SUDOKU_BOARD.clone();
+    let mut example = EXAMPLE_SUDOKU_BOARD_2.clone();
     sudoku::solver::solve(&mut example);
     let ex_print = unsafe { transmute::<_, [[u8; 9]; 9]>(example.clone()) };
     for row in ex_print {
         println!("{:?}", row);
     }
-    assert_ne!(&example, EXAMPLE_SUDOKU_BOARD);
+    assert_ne!(&example, EXAMPLE_SUDOKU_BOARD_2);
     println!("tz: {}", (1_usize << 8).trailing_zeros() as usize);
     print_constants();
 }
@@ -57,4 +57,16 @@ const EXAMPLE_SUDOKU_BOARD: &[u8; 81] = &[
     0, 0, 0, 0, 1, 0, 7, 8, 0, // row 7
     5, 0, 0, 0, 0, 9, 0, 0, 0, // row 8
     0, 0, 0, 0, 0, 0, 0, 4, 0, // row 9
+];
+
+const EXAMPLE_SUDOKU_BOARD_2: &[u8; 81] = &[
+    0, 0, 1, 0, 0, 2, 3, 0, 4,
+    4, 0, 0, 5, 0, 6, 0, 0, 1,
+    0, 0, 0, 4, 0, 7, 0, 8, 6,
+    0, 0, 0, 1, 0, 8, 2, 0, 7,
+    0, 0, 0, 0, 0, 0, 0, 0, 0,
+    6, 0, 9, 3, 0, 4, 0, 0, 0,
+    1, 8, 0, 9, 0, 3, 0, 0, 0,
+    9, 0, 0, 7, 0, 1, 0, 0, 5,
+    3, 0, 2, 6, 0, 0, 1, 0, 0,
 ];

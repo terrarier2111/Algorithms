@@ -64,12 +64,12 @@ pub const COLUMN_INDICES: [[usize; 9]; 9] = {
 
 #[inline]
 pub const fn column_by_cell(cell: usize) -> usize {
-    cell / 9
+    cell % 9
 }
 
 #[inline]
 pub const fn row_by_cell(cell: usize) -> usize {
-    cell % 9
+    cell / 9
 }
 
 #[inline]
@@ -88,13 +88,18 @@ pub struct SudokuBase {
 
 impl SudokuBase {
 
+    // FIXME: the count in the row/column/field metadata is incorrect!
     pub fn new(board: &[u8; CELLS]) -> Self {
         let mut cells = CellArray::new(board);
         let mut column_meta = [MetaArray([0; META_ARRAY_LEN]); 9];
         // column meta
         for column in 0..COLUMNS {
             for row in 0..ROWS {
-                let cell = cells.get((row + column * 9) as u8);
+                let cell = cells.get(COLUMN_INDICES[column][row] as u8);
+                if cell.has_val() {
+                    println!("skipped 1 val: {}", cell.0);
+                    continue;
+                }
                 for val in cell.possible_vals() {
                     column_meta[column].set_possibility(val as usize, column_meta[column].get_possibility(val as usize) as usize + 1);
                 }
@@ -102,10 +107,14 @@ impl SudokuBase {
         }
 
         let mut row_meta = [MetaArray([0; META_ARRAY_LEN]); 9];
-        // column meta
+        // row meta
         for row in 0..ROWS {
             for column in 0..COLUMNS {
-                let cell = cells.get((row + column * 9) as u8);
+                let cell = cells.get(ROW_INDICES[row][column] as u8);
+                if cell.has_val() {
+                    println!("skipped 2 val: {}", cell.0);
+                    continue;
+                }
                 for val in cell.possible_vals() {
                     row_meta[row].set_possibility(val as usize, row_meta[row].get_possibility(val as usize) as usize + 1);
                 }
@@ -113,16 +122,16 @@ impl SudokuBase {
         }
 
         let mut field_meta = [MetaArray([0; META_ARRAY_LEN]); 9];
-
-        for field in 0..9 {
-            let field_vertical_off = (field * 3) / 9 * 27;
-            let field_horizontal_off = (field * 3) % 9;
-            for column in 0..3 {
-                for row in 0..3 {
-                    let cell = cells.get((field_horizontal_off + field_vertical_off + row + column * 9) as u8);
-                    for val in cell.possible_vals() {
-                        field_meta[field].set_possibility(val as usize, field_meta[field].get_possibility(val as usize) as usize + 1);
-                    }
+        // field meta
+        for field in 0..FIELDS {
+            for idx in 0..9 {
+                let cell = cells.get(FIELD_INDICES[field][idx] as u8);
+                if cell.has_val() {
+                    println!("skipped 3 val: {}", cell.0);
+                    continue;
+                }
+                for val in cell.possible_vals() {
+                    field_meta[field].set_possibility(val as usize, field_meta[field].get_possibility(val as usize) as usize + 1);
                 }
             }
         }
@@ -137,22 +146,22 @@ impl SudokuBase {
 
 }
 
-const META_ARRAY_LEN: usize = CELLS.div_ceil(2 * size_of::<u64>() / size_of::<u8>());
+const META_ARRAY_LEN: usize = 9_usize.div_ceil(2 * size_of::<u64>() / size_of::<u8>());
 
 #[derive(Clone, Copy)]
 pub struct MetaArray([u64; META_ARRAY_LEN]);
 
 impl MetaArray {
 
-    const BASE: u64 = (1 << 5) - 1;
+    const BASE: u64 = (1 << 4) - 1;
 
     #[inline]
-    pub const fn has_specified(&self, num: usize) -> bool {
+    pub fn has_specified(&self, num: usize) -> bool {
         self.get_possibility(num) == 0
     }
 
     #[inline]
-    pub const fn get_possibility(&self, num: usize) -> u8 {
+    pub fn get_possibility(&self, num: usize) -> u8 {
         let top_idx = num / (2 * size_of::<u64>() / size_of::<u8>());
         let sub_idx = num % (2 * size_of::<u64>() / size_of::<u8>());
         ((self.0[top_idx] & (Self::BASE << (4 * sub_idx))) >> (4 * sub_idx)) as u8
@@ -182,36 +191,32 @@ impl CellArray {
             } else {
                 let mut maybe = Cell::ANY;
                 // row elems
+                let row = row_by_cell(idx);
                 let mut i = 0;
                 while i < 9 {
-                    let val = board[idx / 9 + i];
+                    let val = board[ROW_INDICES[row][i]];
                     if val != 0 {
                         maybe &= !(1 << val);
                     }
                     i += 1;
                 }
                 // column elems
+                let column = column_by_cell(idx);
                 let mut i = 0;
                 while i < 9 {
-                    let val = board[idx % 9 + i * 9];
+                    let val = board[COLUMN_INDICES[column][i]];
                     if val != 0 {
                         maybe &= !(1 << val);
                     }
                     i += 1;
                 }
                 // field elems
-                let horizontal_off = idx % 3;
-                let vertical_off = ((idx / 9) % 3) * 9;
-                let base = idx - horizontal_off - vertical_off;
+                let field = field_by_cell(idx);
                 let mut i = 0;
-                while i < 3 {
-                    let mut k = 0;
-                    while k < 3 {
-                        let val = board[base + i * 9 + k];
-                        if val != 0 {
-                            maybe &= !(1 << val);
-                        }
-                        k += 1;
+                while i < 9 {
+                    let val = board[FIELD_INDICES[field][i]];
+                    if val != 0 {
+                        maybe &= !(1 << val);
                     }
                     i += 1;
                 }
@@ -240,7 +245,7 @@ pub struct Cell(u16);
 
 impl Cell {
 
-    const ANY: u16 = ((u8::MAX as u16) << 1) | 1 << 10;
+    const ANY: u16 = ((1 << 10) - 1) & !1;
 
     #[inline]
     const fn new_val(num: u8) -> Self {
@@ -303,9 +308,10 @@ impl Iterator for PossibleValsIter {
         if self.0 == 0 {
             return None;
         }
+        // let raw = self.0;
         let idx = self.0.trailing_zeros();
         self.0 &= !(1 << idx);
-        println!("val: {}", idx as u8);
+        // println!("val: {} raw: {}", idx as u8, raw);
         Some(idx as u8)
     }
 

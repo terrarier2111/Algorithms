@@ -28,30 +28,33 @@ fn set_impossible(base: &mut SudokuBase, cell: usize, val: usize) {
     }
 }
 
-fn set_cell_val(base: &mut SudokuBase, cell: usize, val: usize) {
+fn set_cell_val(base: &mut SudokuBase, cell: usize, final_val: usize) {
     let vals = base.cells.get_mut(cell as u8).possible_vals();
-    base.cells.get_mut(cell as u8).set_val(val as u8);
+    base.cells.get_mut(cell as u8).set_val(final_val as u8);
     for val in vals {
         let val = val as usize;
         {
             let cell_field = field_by_cell(cell);
             let field = &mut base.field_meta[cell_field];
-            if !field.has_specified(val) {
-                field.set_possibility(val, field.get_possibility(val) as usize - 1);
+            field.set_possibility(val, field.get_possibility(val) as usize - 1);
+            for cell in FIELD_INDICES[cell_field] {
+                set_impossible(base, cell, final_val);
             }
         }
         {
             let cell_row = row_by_cell(cell);
             let row = &mut base.row_meta[cell_row];
-            if !row.has_specified(val) {
-                row.set_possibility(val, row.get_possibility(val) as usize - 1);
+            row.set_possibility(val, row.get_possibility(val) as usize - 1);
+            for cell in ROW_INDICES[cell_row] {
+                set_impossible(base, cell, final_val);
             }
         }
         {
             let cell_column = column_by_cell(cell);
             let column = &mut base.column_meta[cell_column];
-            if !column.has_specified(val) {
-                column.set_possibility(val, column.get_possibility(val) as usize - 1);
+            column.set_possibility(val, column.get_possibility(val) as usize - 1);
+            for cell in COLUMN_INDICES[cell_column] {
+                set_impossible(base, cell, final_val);
             }
         }
     }
@@ -60,8 +63,11 @@ fn set_cell_val(base: &mut SudokuBase, cell: usize, val: usize) {
 pub fn solve(board: &mut [u8; CELLS]) {
     let mut base = SudokuBase::new(board);
     let mut changed = true;
+    println!("possibilities: {}", base.cells.get(4).possible_vals_set());
+    println!("field possibilities: {}", base.field_meta[2].get_possibility(1));
 
     while changed {
+        println!("next iter!");
         changed = false;
         /*for cell_idx in 0..CELLS {
             let cell = base.cells.get(cell_idx as u8);
@@ -124,29 +130,27 @@ pub fn solve(board: &mut [u8; CELLS]) {
                     }
                 }
             }
-        }
+        }*/
         for column_idx in 0..COLUMNS {
             for i in 1..10 {
                 if base.column_meta[column_idx].get_possibility(i) == 1 {
                     println!("update column {}|{}", column_idx, i);
                     changed = true;
-                    base.column_meta[column_idx].set_possibility(i, 0);
                     for cell in 0..9 {
                         let cell = COLUMN_INDICES[column_idx as usize][cell];
                         if base.cells.get(cell as u8).may_be(i as u8) {
-                            set_cell_val(&mut base, cell, i);
                             println!("set cell val! (column {column_idx} num {i}) {cell}");
+                            set_cell_val(&mut base, cell, i);
                         }
                     }
                 }
             }
-        }*/
+        }
         for field_idx in 0..FIELDS {
             for i in 1..10 {
                 if base.field_meta[field_idx].get_possibility(i) == 1 {
                     println!("update field {}|{}", field_idx, i);
-                    // changed = true;
-                    base.field_meta[field_idx].set_possibility(i, 0);
+                    changed = true;
                     for cell in 0..9 {
                         let cell = FIELD_INDICES[field_idx as usize][cell];
                         if base.cells.get(cell as u8).may_be(i as u8) {
@@ -158,6 +162,8 @@ pub fn solve(board: &mut [u8; CELLS]) {
             }
         }
     }
+    println!("possibilities: {}", base.cells.get(4).possible_vals_set());
+    println!("field possibilities: {}", base.field_meta[2].get_possibility(8));
     for cell_idx in 0..CELLS {
         board[cell_idx] = base.cells.get(cell_idx as u8).get_val().unwrap_or(0);
     }
