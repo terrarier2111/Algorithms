@@ -8,6 +8,7 @@ mod break_encrypt;
 pub mod util;
 mod search;
 mod sudoku;
+mod rng;
 
 use std::collections::HashMap;
 use std::mem::transmute;
