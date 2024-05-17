@@ -1,3 +1,5 @@
+use super::{finalize, Rng};
+
 pub struct XorShiftPRng64 {
     state: u64,
 }
@@ -5,7 +7,7 @@ pub struct XorShiftPRng64 {
 impl XorShiftPRng64 {
 
     // FIXME: use proper value
-    const DEFAULT_SEED: u64 = 0xC3A5B2678A2F3E41;
+    pub(crate) const DEFAULT_SEED: u64 = 0xC3A5B2678A2F3E41;
 
     pub const fn new() -> Self {
         Self::with_seed(Self::DEFAULT_SEED)
@@ -19,15 +21,30 @@ impl XorShiftPRng64 {
     }
 
     pub fn rand_u64(&mut self) -> u64 {
-        /// This is a constant that's frequently used as a finalizer
-        const FINALIZER: u64 = 0xB504F3349AF6D6DC;
-
-        self.state ^= self.state >> 13;
-        self.state ^= self.state << 16;
-        self.state ^= self.state >> 23;
-        ((self.state >> 4) ^ (self.state << 6)) ^ FINALIZER
+        let (state, val) = gen_u64(self.state);
+        self.state = state;
+        val
     }
 
 }
 
-pub trait Bitsequence {}
+impl Rng for XorShiftPRng64 {
+    fn new() -> Self {
+        Self::new()
+    }
+
+    fn with_seed(seed: u64) -> Self {
+        Self::with_seed(seed)
+    }
+
+    fn gen_u64(&mut self) -> u64 {
+        self.rand_u64()
+    }
+}
+
+pub(crate) const fn gen_u64(mut state: u64) -> (u64, u64) {
+    state ^= state >> 13;
+    state ^= state << 16;
+    state ^= state >> 23;
+    (state, finalize(state))
+}

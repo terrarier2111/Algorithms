@@ -16,6 +16,11 @@ use std::slice::Iter;
 use std::collections::hash_map::Values;
 use std::convert::TryInto;
 
+use rng::acorn::AcornRng;
+use rng::lcg::LCGGenerator64;
+use rng::xor_shift::XorShiftPRng64;
+use rng::Rng;
+
 use crate::sudoku::print_constants;
 use crate::sudoku::verifier::verify;
 
@@ -38,7 +43,14 @@ fn main() {
     println!("decrypted poly: {}", encrypt::decrypt_poly(&*poly_result, "JAMESBOND"));
     let to_query_through: &[usize] = &[2, 5, 8, 30, 60, 80, 98, 347, 348, 9423];
     println!("found position: {}", search::binary::search(to_query_through, 30));*/
-    let mut example = EXAMPLE_SUDOKU_BOARD_5.clone();
+    
+    
+    
+    
+    
+    
+    // SUDOKU
+    /*let mut example = EXAMPLE_SUDOKU_BOARD_5.clone();
     sudoku::solver::solve(&mut example);
     let ex_print = unsafe { transmute::<_, [[u8; 9]; 9]>(example.clone()) };
     for row in ex_print {
@@ -46,7 +58,62 @@ fn main() {
     }
     assert!(verify(&example));
     println!("tz: {}", (1_usize << 8).trailing_zeros() as usize);
-    print_constants();
+    print_constants();*/
+
+    // RNG
+    let mut xor_rng = XorShiftPRng64::new();
+    let mut lcg_rng = LCGGenerator64::new();
+    let mut acorn_rng = AcornRng::new();
+    for _ in 0..100 {
+        let xor_val = xor_rng.rand_u64();
+        let lcg_val = lcg_rng.gen_u64();
+        let acorn_val = acorn_rng.gen_u64();
+        //let ratio = (u64::MAX / f64::MAX.round() as u64);
+        //let c_val = (val / ratio) as f64 / f64::MAX;
+        println!("XOR rand: {}", xor_val);
+        println!("LCG rand: {}", lcg_val);
+        println!("Acorn rand: {}", acorn_val);
+    }
+    entropy_analysis(xor_rng);
+    // FIXME: the lcg generator only has ~ 45% ones not 50% as it should
+    entropy_analysis(lcg_rng);
+    // FIXME:the acorn generator only has ~ 32% ones not 50% as it should
+    entropy_analysis(acorn_rng);
+}
+
+fn entropy_analysis(mut rng: impl Rng) {
+    let mut bits = [0; u64::BITS as usize];
+    let mut values = vec![];
+    let mut exists = HashMap::new();
+    let mut ones = 0;
+    let vals = 10000000;
+    for _ in 0..vals {
+        let val = rng.gen_u64();
+        values.push(val);
+        exists.entry(val).and_modify(|val: &mut u64| *val += 1).or_default();
+        ones += val.count_ones();
+        for bit in 0..(u64::BITS as usize) {
+            bits[bit] += ((1 << bit) & val) >> bit;
+        }
+    }
+    println!("ones: {}%", (ones as f64 / (values.len() * u64::BITS as usize) as f64 * 100.0));
+    for bit in 0..(u64::BITS as usize) {
+        if bits[bit] > (vals / 2 + vals / 2 / 10) || bits[bit] < (vals / 2 - vals / 2 / 10) {
+            println!("Sussy bit {bit}: got count {}, expected {}", bits[bit], vals / 2);
+        }
+    }
+    let mut dups = [0; 10];
+    for entry in exists.iter() {
+        if *entry.1 > 1 {
+            dups[(*entry.1).min(10) as usize] += 1;
+        }
+    }
+    for (dups, cases) in dups.into_iter().enumerate() {
+        if *cases > 0 {
+            println!("Got {cases} cases of {dups} duplicates");
+        }
+    }
+    // FIXME: analyse bit seqences
 }
 
 const EXAMPLE_SUDOKU_BOARD: &[u8; 81] = &[
