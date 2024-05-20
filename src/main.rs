@@ -9,13 +9,16 @@ pub mod util;
 mod search;
 mod sudoku;
 mod rng;
+mod hash;
 
 use std::collections::HashMap;
 use std::mem::transmute;
 use std::slice::Iter;
 use std::collections::hash_map::Values;
 use std::convert::TryInto;
+use std::hash::Hasher;
 
+use hash::h1::H1;
 use rng::acorn::AcornRng;
 use rng::lcg::LCGGenerator64;
 use rng::xor_shift::XorShiftPRng64;
@@ -74,11 +77,30 @@ fn main() {
         println!("LCG rand: {}", lcg_val);
         println!("Acorn rand: {}", acorn_val);
     }
-    entropy_analysis(xor_rng);
+    //entropy_analysis(xor_rng);
     // FIXME: the lcg generator only has ~ 45% ones not 50% as it should
-    entropy_analysis(lcg_rng);
+    //entropy_analysis(lcg_rng);
     // FIXME:the acorn generator only has ~ 32% ones not 50% as it should
-    entropy_analysis(acorn_rng);
+    //entropy_analysis(acorn_rng);
+
+
+    hash(64);
+    hash(63);
+    hash(20004);
+    hash(0);
+}
+
+fn hash(val: u64) {
+    let mut hasher = H1::new();
+    hasher.write_u64(val);
+    println!("hashed: {}", hasher.finish());
+    println!("hash: {}", {
+        let mut result = String::new();
+        for i in 0..64 {
+            result.push(if hasher.finish() & (1 << i) != 0 { '1' } else { '0' });
+        }
+        result
+    });
 }
 
 fn entropy_analysis(mut rng: impl Rng) {
