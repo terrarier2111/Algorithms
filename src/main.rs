@@ -77,17 +77,17 @@ fn main() {
         println!("LCG rand: {}", lcg_val);
         println!("Acorn rand: {}", acorn_val);
     }
-    //entropy_analysis(xor_rng);
+    entropy_analysis(xor_rng);
     // FIXME: the lcg generator only has ~ 45% ones not 50% as it should
-    //entropy_analysis(lcg_rng);
+    entropy_analysis(lcg_rng);
     // FIXME:the acorn generator only has ~ 32% ones not 50% as it should
-    //entropy_analysis(acorn_rng);
+    entropy_analysis(acorn_rng);
 
 
-    hash(64);
+    /*hash(64);
     hash(63);
     hash(20004);
-    hash(0);
+    hash(0);*/
 }
 
 fn hash(val: u64) {
@@ -108,6 +108,7 @@ fn entropy_analysis(mut rng: impl Rng) {
     let mut values = vec![];
     let mut exists = HashMap::new();
     let mut ones = 0;
+    let mut pairs = [0; 4];
     let vals = 10000000;
     for _ in 0..vals {
         let val = rng.gen_u64();
@@ -117,11 +118,21 @@ fn entropy_analysis(mut rng: impl Rng) {
         for bit in 0..(u64::BITS as usize) {
             bits[bit] += ((1 << bit) & val) >> bit;
         }
+        for pair in 0..(u64::BITS as usize / 2) {
+            let off = pair * 2;
+            let val = ((3 << off) & val) >> off;
+            pairs[val as usize] += 1;
+        }
     }
     println!("ones: {}%", (ones as f64 / (values.len() * u64::BITS as usize) as f64 * 100.0));
     for bit in 0..(u64::BITS as usize) {
         if bits[bit] > (vals / 2 + vals / 2 / 10) || bits[bit] < (vals / 2 - vals / 2 / 10) {
             println!("Sussy bit {bit}: got count {}, expected {}", bits[bit], vals / 2);
+        }
+    }
+    for pair in 0..4 {
+        if pairs[pair] > (vals * 8 + vals * 8 / 10) || pairs[pair] < (vals * 8 - vals * 8 / 10) {
+            println!("Sussy pair {}: got count {}, expected {}", if pair == 0 { "00" } else if pair == 1 { "10" } else if pair == 2 { "01" } else { "11" }, pairs[pair], vals * 8);
         }
     }
     let mut dups = [0; 10];
