@@ -12,6 +12,18 @@ impl H1 {
         }
     }
 
+    fn write_part(&mut self, val: u64) {
+        let val = val ^ MIX;
+        let off = (val % 62) + 1;
+        if off % 2 == 0 {
+            self.val ^= self.val << off;
+        } else {
+            self.val ^= self.val >> off;
+        }
+
+        self.val ^= (val >> 3) ^ (val << 5) ^ (val << 29) ^ (val >> 23);
+    }
+
 }
 
 const MIX: u64 = 0b01010101011001010100101010101100111100101000100101011000101001011;
@@ -24,31 +36,39 @@ impl Hasher for H1 {
     }
 
     fn write(&mut self, bytes: &[u8]) {
-        for part in bytes.chunks(8) {
-            if part.len() == 8 {
-                let val = {
-                    let mut val = 0;
-                    for x in 0..8 {
-                        val |= (part[x] as u64) << (x * 8);
-                    }
-                    val
-                };
-                let off = (val % 62) + 1;
-                if off % 2 == 0 {
-                    self.val ^= self.val << off;
-                } else {
-                    self.val ^= self.val >> off;
+        for i in 0..(bytes.len() / 8) {
+            let val = {
+                let mut val = 0;
+                for x in 0..8 {
+                    val |= (bytes[8 * i] as u64) << (x * 8);
                 }
-                self.val ^= (val >> 3) ^ (val << 5) ^ (val << 29) ^ (val >> 23);
-            } else {
-                for byte in part {
-                    // ensure zeros aren't making our resulting hash 0
-                    let val = (*byte % 62) + 1;
-                    if val % 2 == 0 {
-                        self.val ^= self.val << val;
-                    } else {
-                        self.val ^= self.val >> val;
-                    }
+                val
+            };
+            
+            self.write_part(val);
+        }
+        if bytes.len() % 8 != 0 {
+            let val = {
+                let mut val = 0;
+                let present = bytes.len() - (bytes.len() / 8 * 8);
+                for x in (bytes.len() / 8 * 8)..bytes.len() {
+                    val |= (bytes[x] as u64) << ((x % 8) * 8);
+                }
+                for i in present..(8 - present) {
+                    val |= PADDING & ((u8::MAX as u64) << (8 * i));
+                }
+                val
+            };
+
+            // FIXME: get last bytes and extend with padding
+            for i in (bytes.len() / 8 * 8)..bytes.len() {
+                let byte = bytes[i];
+                // ensure zeros aren't making our resulting hash 0
+                let val = (byte % 62) + 1;
+                if val % 2 == 0 {
+                    self.val ^= self.val << val;
+                } else {
+                    self.val ^= self.val >> val;
                 }
             }
         }
