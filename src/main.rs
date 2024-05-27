@@ -24,6 +24,7 @@ use rng::lcg::LCGGenerator64;
 use rng::xor_shift::XorShiftPRng64;
 use rng::Rng;
 
+use crate::hash::h2::H2;
 use crate::sudoku::print_constants;
 use crate::sudoku::verifier::verify;
 
@@ -84,14 +85,25 @@ fn main() {
     entropy_analysis(acorn_rng);
 
 
-    /*hash(64);
+    hash(64);
     hash(63);
     hash(20004);
-    hash(0);*/
+    hash(0);
+    let mut xor_rng = XorShiftPRng64::new();
+    let val_cnt = 1000;
+    let mut vals = vec![];
+    let mut dist = 0;
+    for _ in 0..val_cnt {
+        let mut hasher = H2::new();
+        hasher.write_u64(xor_rng.gen_u64());
+        vals.push(hasher.finish());
+        dist += ((u64::MAX / 2) as i128) - (hasher.finish() as i128);
+    }
+    println!("dist {}", dist);
 }
 
 fn hash(val: u64) {
-    let mut hasher = H1::new();
+    let mut hasher = H2::new();
     hasher.write_u64(val);
     println!("hashed: {}", hasher.finish());
     println!("hash: {}", {
