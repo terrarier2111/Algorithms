@@ -8,12 +8,15 @@ mod break_encrypt;
 pub mod util;
 mod search;
 mod sudoku;
+mod compression;
 
 use std::collections::HashMap;
 use std::mem::transmute;
 use std::slice::Iter;
 use std::collections::hash_map::Values;
 use std::convert::TryInto;
+
+use compression::huffman::{self, decode};
 
 use crate::sudoku::print_constants;
 use crate::sudoku::verifier::verify;
@@ -37,7 +40,23 @@ fn main() {
     println!("decrypted poly: {}", encrypt::decrypt_poly(&*poly_result, "JAMESBOND"));
     let to_query_through: &[usize] = &[2, 5, 8, 30, 60, 80, 98, 347, 348, 9423];
     println!("found position: {}", search::binary::search(to_query_through, 30));*/
-    let mut example = EXAMPLE_SUDOKU_BOARD_5.clone();
+    
+    
+    
+    
+    let test_val = "abcdefghhhh";
+    let encoded = huffman::encode(test_val).unwrap();
+    println!("encoded: {:?}", encoded);
+    let decoded = decode(encoded);
+    assert_eq!(&decoded, test_val);
+    println!("success!!!");
+    
+    
+    
+    
+    
+    
+    /*let mut example = EXAMPLE_SUDOKU_BOARD_8.clone();
     sudoku::solver::solve(&mut example);
     let ex_print = unsafe { transmute::<_, [[u8; 9]; 9]>(example.clone()) };
     for row in ex_print {
@@ -45,7 +64,7 @@ fn main() {
     }
     assert!(verify(&example));
     println!("tz: {}", (1_usize << 8).trailing_zeros() as usize);
-    print_constants();
+    print_constants();*/
 }
 
 const EXAMPLE_SUDOKU_BOARD: &[u8; 81] = &[
@@ -107,4 +126,41 @@ const EXAMPLE_SUDOKU_BOARD_5: &[u8; 81] = &[
     5, 0, 6, 0, 0, 8, 0, 0, 0,
     8, 0, 0, 0, 1, 0, 0, 7, 0,
     0, 0, 3, 0, 0, 9, 2, 0, 0,
+];
+
+// solvable
+const EXAMPLE_SUDOKU_BOARD_6: &[u8; 81] = &[
+    0, 0, 1, 0, 2, 0, 0, 0, 3,
+    0, 0, 0, 0, 3, 0, 0, 0, 4,
+    0, 5, 0, 6, 0, 0, 0, 0, 0,
+    0, 0, 0, 7, 0, 0, 0, 5, 8,
+    0, 0, 9, 0, 0, 0, 1, 0, 0,
+    6, 3, 0, 0, 0, 2, 0, 0, 0,
+    0, 0, 0, 0, 0, 5, 0, 2, 0,
+    4, 0, 0, 0, 8, 0, 0, 0, 0,
+    1, 0, 0, 0, 9, 0, 7, 0, 0,
+];
+
+const EXAMPLE_SUDOKU_BOARD_7: &[u8; 81] = &[
+    1, 0, 2, 3, 0, 0, 0, 0, 4,
+    0, 5, 0, 0, 0, 0, 0, 0, 2,
+    0, 0, 0, 6, 0, 0, 7, 0, 0,
+    0, 8, 0, 0, 2, 0, 0, 0, 0,
+    0, 0, 7, 0, 0, 0, 6, 0, 0,
+    0, 0, 0, 0, 4, 0, 0, 1, 0,
+    0, 0, 6, 0, 0, 9, 0, 0, 0,
+    4, 0, 0, 0, 0, 0, 0, 3, 0,
+    2, 0, 0, 0, 0, 8, 5, 0, 1,
+];
+
+const EXAMPLE_SUDOKU_BOARD_8: &[u8; 81] = &[
+    0, 7, 0, 0, 0, 4, 0, 0, 2,
+    0, 0, 1, 0, 3, 0, 0, 4, 0,
+    0, 0, 0, 5, 0, 0, 1, 0, 0,
+    0, 4, 0, 0, 0, 3, 0, 0, 8,
+    0, 0, 3, 0, 0, 0, 7, 0, 0,
+    1, 0, 0, 6, 0, 0, 0, 9, 0,
+    0, 0, 4, 0, 0, 1, 0, 0, 0,
+    0, 2, 0, 0, 7, 0, 8, 0, 0,
+    5, 0, 0, 9, 0, 0, 0, 6, 0,
 ];
