@@ -10,6 +10,7 @@ mod search;
 mod sudoku;
 mod rng;
 mod hash;
+mod compression;
 
 use std::collections::HashMap;
 use std::mem::transmute;
@@ -18,6 +19,7 @@ use std::collections::hash_map::Values;
 use std::convert::TryInto;
 use std::hash::Hasher;
 
+use compression::huffman;
 use hash::h1::H1;
 use rng::acorn::AcornRng;
 use rng::lcg::LCGGenerator64;
@@ -47,7 +49,7 @@ fn main() {
     println!("decrypted poly: {}", encrypt::decrypt_poly(&*poly_result, "JAMESBOND"));
     let to_query_through: &[usize] = &[2, 5, 8, 30, 60, 80, 98, 347, 348, 9423];
     println!("found position: {}", search::binary::search(to_query_through, 30));*/
-    let mut example = EXAMPLE_SUDOKU_BOARD_8.clone();
+    /*let mut example = EXAMPLE_SUDOKU_BOARD_8.clone();
     sudoku::solver::solve(&mut example);
     let ex_print = unsafe { transmute::<_, [[u8; 9]; 9]>(example.clone()) };
     for row in ex_print {
@@ -57,8 +59,17 @@ fn main() {
     println!("tz: {}", (1_usize << 8).trailing_zeros() as usize);
     print_constants();*/
 
+
+    let test_val = "abcdefghhhh";
+    let encoded = huffman::encode(test_val).unwrap();
+    println!("encoded: {:?}", encoded);
+    let decoded = huffman::decode(encoded);
+    assert_eq!(&decoded, test_val);
+    println!("success!!!");
+
+
     // RNG
-    let mut xor_rng = XorShiftPRng64::new();
+    /*let mut xor_rng = XorShiftPRng64::new();
     let mut lcg_rng = LCGGenerator64::new();
     let mut acorn_rng = AcornRng::new();
     for _ in 0..100 {
@@ -92,7 +103,7 @@ fn main() {
         vals.push(hasher.finish());
         dist += ((u64::MAX / 2) as i128) - (hasher.finish() as i128);
     }
-    println!("dist {}", dist);
+    println!("dist {}", dist);*/
 }
 
 fn hash(val: u64) {
