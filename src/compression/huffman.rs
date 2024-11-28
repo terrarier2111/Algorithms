@@ -23,8 +23,7 @@ pub fn encode(src: &str) -> Option<HuffmanEncoded> {
     }
     let encoding_tree = ordered.pop().unwrap();
     let mut huff_table = HashMap::new();
-    let mut tmp = BitStream::new();
-    build_entries(&mut huff_table, &encoding_tree.node, &mut tmp);
+    build_entries_iter(&mut huff_table, &encoding_tree.node);
     
     let mut output = BitStream::new();
     for c in src.chars() {
@@ -57,6 +56,26 @@ pub fn decode(src: HuffmanEncoded) -> String {
     out
 }
 
+/// iterative DFS impl
+fn build_entries_iter(table: &mut HashMap<char, BitArray>, root_node: &CodeNode) {
+    let mut nodes = vec![(root_node, BitStream::new())];
+    while let Some((node, mut stream)) = nodes.pop() {
+        match node {
+            CodeNode::Leaf(val) => {
+                table.insert(*val, stream.into_bit_array());
+            },
+            CodeNode::Branch { lhs, rhs } => {
+                let mut lhs_stream = stream.clone();
+                lhs_stream.write_bit(0);
+                nodes.push((&lhs, lhs_stream));
+                stream.write_bit(1);
+                nodes.push((&rhs, stream));
+            },
+        }
+    }
+}
+
+/// recursive DFS impl
 fn build_entries(table: &mut HashMap<char, BitArray>, node: &CodeNode, curr_word: &mut BitStream) {
     match node {
         CodeNode::Leaf(val) => {
@@ -129,10 +148,6 @@ impl BitStream {
             write_bit_idx: src.last_bits,
             reader_idx: 0,
         }
-    }
-
-    fn write_stream(&mut self, other: &BitStream) {
-        unimplemented!();
     }
 
     fn write_array(&mut self, bits: &BitArray) {
@@ -269,12 +284,4 @@ enum CodeNode {
 pub struct HuffmanEncoded {
     table: CodeNode,
     blob: BitArray,
-}
-
-fn reverse_table<K, V: Eq + Hash>(src: HashMap<K, V>) -> HashMap<V, K> {
-    let mut dst = HashMap::new();
-    for (key, val) in src {
-        dst.insert(val, key).expect("can't reverse table, as src has a duplicate value");
-    }
-    dst
 }
