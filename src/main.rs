@@ -11,6 +11,8 @@ mod sudoku;
 mod rng;
 mod hash;
 mod compression;
+mod pathfinding;
+mod prime_finder;
 
 use std::collections::HashMap;
 use std::mem::transmute;
@@ -69,7 +71,7 @@ fn main() {
 
 
     // RNG
-    /*let mut xor_rng = XorShiftPRng64::new();
+    let mut xor_rng = XorShiftPRng64::new();
     let mut lcg_rng = LCGGenerator64::new();
     let mut acorn_rng = AcornRng::new();
     for _ in 0..100 {
@@ -82,10 +84,13 @@ fn main() {
         println!("LCG rand: {}", lcg_val);
         println!("Acorn rand: {}", acorn_val);
     }
+    println!("EA xor:");
     entropy_analysis(xor_rng);
     // FIXME: the lcg generator only has ~ 45% ones not 50% as it should
+    println!("EA lcg:");
     entropy_analysis(lcg_rng);
     // FIXME:the acorn generator only has ~ 32% ones not 50% as it should
+    println!("EA acorn:");
     entropy_analysis(acorn_rng);
 
 
@@ -103,7 +108,7 @@ fn main() {
         vals.push(hasher.finish());
         dist += ((u64::MAX / 2) as i128) - (hasher.finish() as i128);
     }
-    println!("dist {}", dist);*/
+    println!("dist {}", dist);
 }
 
 fn hash(val: u64) {
