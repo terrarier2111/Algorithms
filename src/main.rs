@@ -62,7 +62,7 @@ fn main() {
     print_constants();*/
 
 
-    let test_val = "abcdefghhhh";
+    let test_val = "abracadabra";
     let encoded = huffman::encode(test_val).unwrap();
     println!("encoded: {:?}", encoded);
     let decoded = huffman::decode(encoded);
@@ -71,7 +71,7 @@ fn main() {
 
 
     // RNG
-    let mut xor_rng = XorShiftPRng64::new();
+    /*let mut xor_rng = XorShiftPRng64::new();
     let mut lcg_rng = LCGGenerator64::new();
     let mut acorn_rng = AcornRng::new();
     for _ in 0..100 {
@@ -108,7 +108,7 @@ fn main() {
         vals.push(hasher.finish());
         dist += ((u64::MAX / 2) as i128) - (hasher.finish() as i128);
     }
-    println!("dist {}", dist);
+    println!("dist {}", dist);*/
 }
 
 fn hash(val: u64) {

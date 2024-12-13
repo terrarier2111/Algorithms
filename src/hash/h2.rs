@@ -21,7 +21,7 @@ impl H2 {
         self.val ^= val.rotate_right(val.count_ones());
     }
 
-    fn write_partial<const RESPECT_BUF: bool>(&mut self, bytes: &[u8]) {
+    fn write_buffered<const RESPECT_BUF: bool>(&mut self, bytes: &[u8]) {
         let off = if RESPECT_BUF { self.buf_idx } else { 0 };
         let cnt = (off + bytes.len()).min(BLOCK_SIZE);
         for i in off..cnt {
@@ -53,7 +53,7 @@ impl Hasher for H2 {
         let mut off = 0;
         if self.buf_idx != 0 {
             let prev = self.buf_idx;
-            self.write_partial::<true>(bytes);
+            self.write_buffered::<true>(bytes);
             off = self.buf_idx - prev;
         }
         if off != bytes.len() {
@@ -66,10 +66,11 @@ impl Hasher for H2 {
             }
         }
         let start = (bytes.len() - off) / BLOCK_SIZE * BLOCK_SIZE + off;
-        self.write_partial::<false>(&bytes[start..]);
+        self.write_buffered::<false>(&bytes[start..]);
     }
 }
 
+#[inline]
 fn u64_from_buf(buf: &[u8]) -> u64 {
     buf[0] as u64 | ((buf[1] as u64) << 8) | ((buf[2] as u64) << 16) | ((buf[3] as u64) << 24) | ((buf[4] as u64) << 32) | ((buf[5] as u64) << 40)
     | ((buf[6] as u64) << 48) | ((buf[7] as u64) << 56)
